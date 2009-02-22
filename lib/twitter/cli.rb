@@ -279,7 +279,7 @@ Main {
       description "Ignore since_id and show first page of results even if there aren't new ones"
     }
     option('reverse', 'r') {
-      description 'Reverse the output so the oldest tweets are at the top'
+      description 'Reverse output, with the newest tweets at the top'
     }
     
     def run
@@ -287,7 +287,7 @@ Main {
         timeline = params['timeline'].value == 'me' ? 'user' : params['timeline'].value
         options, since_id = {}, Configuration["#{timeline}_since_id"]
         options[:since_id] = since_id if !since_id.nil? && !params['force'].given?
-        reverse = params['reverse'].given? ? true : false
+        reverse = params['reverse'].given? ? false : true
         cache = [:friends, :user].include?(timeline)
         collection = base.timeline(timeline.to_sym, options)
         output_tweets(collection, {:cache => cache, :since_prefix => timeline, :reverse => reverse})
