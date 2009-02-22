@@ -3,3 +3,5 @@ pkg
 log
 doc
 twitter-*.gem
+*.tmproj
+*~
