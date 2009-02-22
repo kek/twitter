@@ -1,5 +1,3 @@
-require 'htmlentities'
-
 module Twitter
   module CLI
     module Helpers

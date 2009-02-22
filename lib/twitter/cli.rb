@@ -9,6 +9,7 @@ require 'main'
 require 'highline/import'
 require 'activerecord'
 require 'sqlite3'
+require 'htmlentities'
 
 HighLine.track_eof = false
 CLI_ROOT = File.expand_path(File.join(File.dirname(__FILE__), 'cli'))
