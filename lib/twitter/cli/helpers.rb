@@ -1,3 +1,5 @@
+require 'htmlentities'
+
 module Twitter
   module CLI
     module Helpers
@@ -32,7 +34,7 @@ module Twitter
               formatted_msg += "\n#{indention}" if sixth_word
             end
             
-            say "#{CGI::unescapeHTML(formatted_name)}: #{CGI::unescapeHTML(formatted_msg)}\n#{indention}#{formatted_time}\n\n"
+            say "#{CGI::unescapeHTML(formatted_name)}: #{CGI.unescapeHTML(HTMLEntities.new.decode(formatted_msg))}\n#{indention}#{formatted_time}\n\n"
           end
           
           Configuration["#{options[:since_prefix]}_since_id"] = options[:reverse] ? collection.last.id : collection.first.id
