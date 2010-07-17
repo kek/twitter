@@ -1,32 +1,63 @@
-require 'uri'
-require 'cgi'
-require 'net/http'
-require 'yaml'
-require 'time'
+require 'forwardable'
 require 'rubygems'
-require 'hpricot'
 
-$:.unshift(File.dirname(__FILE__))
-require 'twitter/version'
-require 'twitter/easy_class_maker'
-require 'twitter/base'
-require 'twitter/user'
-require 'twitter/search'
-require 'twitter/status'
-require 'twitter/direct_message'
-require 'twitter/rate_limit_status'
-require 'twitter/search_result_info'
-require 'twitter/search_result'
+gem 'oauth', '>= 0.3.4'
+require 'oauth'
+
+gem 'mash', '0.0.3'
+require 'mash'
+
+gem 'httparty', '0.4.3'
+require 'httparty'
 
 module Twitter
-  class Unavailable < StandardError; end
-  class CantConnect < StandardError; end
-  class BadResponse < StandardError; end
-  class UnknownTimeline < ArgumentError; end
-  class RateExceeded < StandardError; end
-  class CantFindUsers < ArgumentError; end
-  class AlreadyFollowing < StandardError; end
-  class CantFollowUser < StandardError; end
-
-  SourceName = 'twittergem'
+  class TwitterError < StandardError
+    attr_reader :data
+    
+    def initialize(data)
+      @data = data
+      super
+    end
+  end
+  
+  class RateLimitExceeded < TwitterError; end
+  class Unauthorized      < TwitterError; end
+  class General           < TwitterError; end
+  
+  class Unavailable   < StandardError; end
+  class InformTwitter < StandardError; end
+  class NotFound      < StandardError; end
+  
+  
+  def self.firehose
+    response = HTTParty.get('http://twitter.com/statuses/public_timeline.json', :format => :json)
+    response.map { |tweet| Mash.new(tweet) }
+  end
+  
+  def self.user(id)
+    response = HTTParty.get("http://twitter.com/users/show/#{id}.json", :format => :json)
+    Mash.new(response)
+  end
+  
+  def self.status(id)
+    response = HTTParty.get("http://twitter.com/statuses/show/#{id}.json", :format => :json)
+    Mash.new(response)
+  end
+  
+  def self.friend_ids(id)
+    HTTParty.get("http://twitter.com/friends/ids/#{id}.json", :format => :json)
+  end
+  
+  def self.follower_ids(id)
+    HTTParty.get("http://twitter.com/followers/ids/#{id}.json", :format => :json)
+  end
 end
+
+directory = File.expand_path(File.dirname(__FILE__))
+
+require File.join(directory, 'twitter', 'oauth')
+require File.join(directory, 'twitter', 'httpauth')
+require File.join(directory, 'twitter', 'request')
+require File.join(directory, 'twitter', 'base')
+require File.join(directory, 'twitter', 'search')
+require File.join(directory, 'twitter', 'trends')

@@ -9,11 +9,5 @@ oauth.authorize_from_access(config['atoken'], config['asecret'])
 
 client = Twitter::Base.new(oauth)
 
-pp client.friends_timeline
-puts '*'*50
-
-pp client.user_timeline
-puts '*'*50
-
-pp client.replies
-puts '*'*50
+puts client.friendship_exists?('jnunemaker', 'orderedlist')
+puts client.friendship_exists?('jnunemaker', 'biz')

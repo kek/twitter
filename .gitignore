@@ -3,5 +3,9 @@ pkg
 log
 doc
 twitter-*.gem
+<<<<<<< HEAD
 *.tmproj
 *~
+=======
+rdoc
+>>>>>>> 30d32125b30444bf7783288082bf2bc3dbf54714

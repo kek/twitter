@@ -1,18 +1,15 @@
-require 'rubygems'
 require File.join(File.dirname(__FILE__), '..', 'lib', 'twitter')
+require 'pp'
 
-Twitter::Search.new('httparty').each { |r| puts r.inspect,'' }
-Twitter::Search.new('httparty').page(2).each { |r| puts r.inspect, '' }
+search = Twitter::Search.new.from('jnunemaker')
 
-# search = Twitter::Search.new
-# search.from('jnunemaker').to('oaknd1').each { |r| puts r.inspect, '' }
-# pp search.result
-# search.clear
+puts '*'*50, 'First Run', '*'*50
+search.each { |result| pp result }
 
-# search.from('jnunemaker').to('oaknd1').since(814529437).containing('milk').each { |r| puts r.inspect, '' }
-# search.clear
-# 
-# search.geocode('40.757929', '-73.985506', '50mi').containing('holland').each { |r| puts r.inspect, '' }
-# search.clear
+puts '*'*50, 'Second Run', '*'*50
+search.each { |result| pp result }
 
-# pp search.from('jnunemaker').fetch()
+puts '*'*50, 'Parameter Check', '*'*50
+pp Twitter::Search.new('#austineats').fetch().results.first
+pp Twitter::Search.new('#austineats').page(2).fetch().results.first
+pp Twitter::Search.new('#austineats').since(1412737343).fetch().results.first

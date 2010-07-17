@@ -1,42 +1,70 @@
-ProjectName = 'twitter'
-WebsitePath = "jnunemaker@rubyforge.org:/var/www/gforge-projects/#{ProjectName}"
-
 require 'rubygems'
 require 'rake'
-require 'echoe'
-require 'spec/rake/spectask'
-require "lib/#{ProjectName}/version"
 
-Echoe.new(ProjectName, Twitter::Version) do |p|
-  p.description     = "a command line interface for twitter, also a library which wraps the twitter api"
-  p.url             = "http://#{ProjectName}.rubyforge.org"
-  p.author          = "John Nunemaker"
-  p.email           = "nunemaker@gmail.com"
-  p.extra_deps      = [['hpricot', '>= 0.6'], ['activesupport', '>= 2.1'], ['httparty', '>= 0.2.4']]
-  p.need_tar_gz     = false
-  p.docs_host       = WebsitePath
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name              = "twitter"
+    gem.summary           = %Q{wrapper for the twitter api (oauth only)}
+    gem.email             = "nunemaker@gmail.com"
+    gem.homepage          = "http://github.com/jnunemaker/twitter"
+    gem.authors           = ["John Nunemaker"]
+    gem.rubyforge_project = "twitter"
+    gem.files             = FileList["[A-Z]*", "{examples,lib,test}/**/*"]
+    
+    gem.add_dependency('oauth', '>= 0.3.4')
+    gem.add_dependency('mash', '0.0.3')
+    gem.add_dependency('httparty', '0.4.3')
+    
+    gem.add_development_dependency('thoughtbot-shoulda')
+    gem.add_development_dependency('jeremymcanally-matchy')
+    gem.add_development_dependency('mocha')
+    gem.add_development_dependency('fakeweb')
+    gem.add_development_dependency('mash')
+  end
+  
+  Jeweler::RubyforgeTasks.new do |rubyforge|
+    rubyforge.doc_task = "rdoc"
+  end
+rescue LoadError
+  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
 
-desc 'Upload website files to rubyforge'
-task :website do
-  sh %{rsync -av website/ #{WebsitePath}}
-  Rake::Task['website_docs'].invoke
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/*_test.rb'
+  test.verbose = false
 end
 
-task :website_docs do
-  Rake::Task['redocs'].invoke
-  sh %{rsync -av doc/ #{WebsitePath}/docs}
-end
-
-desc 'Preps the gem for a new release'
-task :prepare do
-  %w[manifest build_gemspec].each do |task|
-    Rake::Task[task].invoke
+begin
+  require 'rcov/rcovtask'
+  Rcov::RcovTask.new do |test|
+    test.libs << 'test'
+    test.pattern = 'test/**/*_test.rb'
+    test.verbose = true
+  end
+rescue LoadError
+  task :rcov do
+    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
   end
 end
 
-Rake::Task[:default].prerequisites.clear
-task :default => :spec
-Spec::Rake::SpecTask.new do |t|
-  t.spec_files = FileList["spec/**/*_spec.rb"]
+
+task :default => :test
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  if File.exist?('VERSION.yml')
+    config = YAML.load(File.read('VERSION.yml'))
+    version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
+  else
+    version = ""
+  end
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "twitter #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
+

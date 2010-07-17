@@ -1,17 +1,18 @@
-gem 'httparty'
-require 'httparty'
-
 module Twitter
   class Search
     include HTTParty
     include Enumerable
-    base_uri 'search.twitter.com'
     
     attr_reader :result, :query
     
-    def initialize(q=nil)
+    def initialize(q=nil, options={})
+      @options = options
       clear
       containing(q) if q && q.strip != ''
+    end
+    
+    def user_agent
+      @options[:user_agent] || 'Ruby Twitter Gem'
     end
     
     def from(user)
@@ -79,23 +80,32 @@ module Twitter
       self
     end
     
+    def max(id)
+      @query[:max_id] = id
+      self
+    end
+    
     # Clears all the query filters to make a new search
     def clear
+      @fetch = nil
       @query = {}
       @query[:q] = []
       self
     end
     
-    # If you want to get results do something other than iterate over them.
-    def fetch
-      @query[:q] = @query[:q].join(' ')
-      SearchResultInfo.new_from_hash(self.class.get('/search.json', {:query => @query}))
+    def fetch(force=false)
+      if @fetch.nil? || force
+        query = @query.dup
+        query[:q] = query[:q].join(' ')
+        response = self.class.get('http://search.twitter.com/search.json', :query => query, :format => :json, :headers => {'User-Agent' => user_agent})
+        @fetch = Mash.new(response)
+      end
+      
+      @fetch
     end
     
     def each
-      @result = fetch()
-      @result['results'].each { |r| yield r }
+      fetch()['results'].each { |r| yield r }
     end
   end
 end
-
